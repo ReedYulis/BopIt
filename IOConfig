@@ -1,0 +1,62 @@
+#include <Wire.h>
+#include "SparkFun_CAP1203.h" // Click here to get the library: http://librarymanager/All#SparkFun_CAP1203
+
+CAP1203 sensor; // Initialize sensor
+
+void setup()
+{
+  Wire.begin();       // Join I2C bus
+  Serial.begin(9600); // Start serial for output
+  pinMode(8, OUTPUT); //LED
+  pinMode(7, OUTPUT);
+  pinMode(6, OUTPUT);
+  pinMode(9, INPUT); //reset button
+  pinMode(3, INPUT); //push button
+  pinMode(4, OUTPUT); //LED that will become rocket sound
+  pinMode(1, INPUT);//switch for twist it
+  pinMode(2, OUTPUT); //light to show success
+
+  // Setup sensor
+  if (sensor.begin() == false)
+  {
+    Serial.println("Not connected. Please check connections and read the hookup guide.");
+    while (1)
+      ;
+  }
+  else
+  {
+    Serial.println("Connected!");
+  }
+}
+
+void loop()
+{
+  while (sensor.isTouched())
+  {
+    digitalWrite(8, HIGH); // sets the digital pin 13 on
+    delay(250);            // waits for a second
+    digitalWrite(8, LOW);  // sets the digital pin 13 off
+    delay(250); 
+     digitalWrite(7, HIGH); // sets the digital pin 13 on
+    delay(250);            // waits for a second
+    digitalWrite(7, LOW);  // sets the digital pin 13 off
+    delay(250);
+    digitalWrite(6, HIGH);
+    delay(250);
+    digitalWrite(6, !digitalRead(6));   
+  }
+
+  while (!digitalRead(3))
+  {
+    digitalWrite(4, HIGH); // sets the digital pin 13 on
+    delay(250);            // waits for a second
+    digitalWrite(4, LOW);
+  }
+
+  while (!digitalRead(1))
+  {
+    digitalWrite(2, HIGH); // sets the digital pin 13 on
+    delay(250);            // waits for a second
+    digitalWrite(2, LOW);
+  }
+}
