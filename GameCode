@@ -1,0 +1,196 @@
+#include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
+#include <stdbool.h>
+//FSM Pseudocode
+	/*
+	 * Define type GameState
+	 * states:
+	 * 		reset/start
+	 * 		instruction
+	 * 		userTurn
+	 * 		Victory
+	 * 		Failure
+	 * Write Success function:
+	 * 
+	 * }
+	 * 
+	 * state table:
+	 * 
+	 * gamestart -> instruction -> user turn -> (victory/failure/instruction)
+	 * 
+	 * Victory -> reset/start
+	 * Failure -> reset/start
+	 * Instruction Function:
+	 * void newInstruction {
+	 * 	
+	 * 
+	 * */
+	 
+	 
+//Global Variables:
+
+int score = 0;
+int units = 0;
+int tens = 0;
+int sleepTimer = 0;
+
+typedef enum
+{
+	GameIdle,
+    GameStart,
+    Instruction,
+    UserTurn,
+    Victory,
+    Failure
+} GameState;
+
+typedef enum
+{
+	Launch,
+	Slide,
+	Twist
+} UserAction;
+
+
+UserAction pickAction()
+{
+	int instr = rand() % 3;
+	if (instr == 0)
+	{
+		return Launch;
+	}
+	else if (instr == 1)
+	{
+		return Slide;
+	}
+	else
+	{
+		return Twist;
+	}
+}
+void declareAction(UserAction instruction)
+{
+	//play mp3 corresponding with specified instruction
+}
+void endGame(GameState endState)
+{
+	units = score % 10;
+	tens = (score - units) / 10;
+	//play mp3 corresponding with failure
+	if (tens != 0)
+	{
+		//play mp3 for tens digit (most likely some form of playfile(base address + 10 + tens variable)
+	}
+	//play mp3 for units digit ((most likely some form of playfile(base address + units variable)
+}
+
+bool success(UserAction action) //prototype for success checker
+{
+	bool nailedIt = false;
+	int i = 0;
+	while (i < 1000) //this number can and should be messed with to determine a good time interval. Can also be turned into a difficulty variable with multiple settings
+	{
+		switch (action)
+		{
+			case Launch:
+			{
+				if (/*input is successful*/1)
+				{
+					nailedIt = true;
+				}
+			}
+			break;
+			case Slide:
+			{
+				if (/*input is successful*/1)
+				{
+					nailedIt = true;
+				}
+			}
+			break;
+			case Twist:
+			{
+				if (/*input is successful*/1)
+				{
+					nailedIt = true;
+				}
+			}
+			break;
+			default:
+				break;
+		}
+		i++;
+	}
+	return nailedIt;
+}
+
+int main(int argc, char **argv)
+{
+	
+	GameState nextState = GameIdle;
+	UserAction doThis;
+	while (1)
+	{
+		switch (nextState)
+		{
+			case GameIdle:
+			{
+				//play mp3 for "press button to start!"
+				while (/*not getting button input AND */sleepTimer < 10000) //this number can and should be messed with to determine a good time interval.
+				{
+					sleepTimer++;
+				}
+				if (sleepTimer == 10000)
+				{
+					//send power off signal
+				}
+				nextState = GameStart;
+			}
+			case GameStart:
+			{
+				score = 0;
+				nextState = Instruction;
+			}
+			break;
+			case Instruction:
+			{
+				doThis = pickAction();
+				declareAction(doThis);
+				nextState = UserTurn;
+			}
+			break;
+			case UserTurn:
+			{
+				if (success(doThis))
+				{
+					score ++;
+				}
+				else
+				{
+					nextState = Failure;
+				}
+				if (score == 99)
+				{
+					nextState = Victory;
+				}
+			}
+			break;
+			case Victory:
+			{
+				endGame(nextState);
+				nextState = GameIdle;
+			}
+			break;
+			case Failure:
+			{
+				endGame(nextState);
+				nextState = GameIdle;
+			}
+			break;
+			default:
+				break;
+		}
+	}
+	return 0;
+}
