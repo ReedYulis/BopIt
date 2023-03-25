@@ -2,195 +2,197 @@
 #include <time.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include "SoftwareSerial.h"
+#include "DFRobotDFPlayerMini.cpp"
 //FSM Pseudocode
-	/*
-	 * Define type GameState
-	 * states:
-	 * 		reset/start
-	 * 		instruction
-	 * 		userTurn
-	 * 		Victory
-	 * 		Failure
-	 * Write Success function:
-	 * 
-	 * }
-	 * 
-	 * state table:
-	 * 
-	 * gamestart -> instruction -> user turn -> (victory/failure/instruction)
-	 * 
-	 * Victory -> reset/start
-	 * Failure -> reset/start
-	 * Instruction Function:
-	 * void newInstruction {
-	 * 	
-	 * 
-	 * */
-	 
-	 
-//Global Variables:
+  /*
+   * Define type GameState
+   * states:
+   *    reset/start
+   *    instruction
+   *    userTurn
+   *    Victory
+   *    Failure
+   * Write Success function:
+   * 
+   * }
+   * 
+   * state table:
+   * 
+   * gamestart -> instruction -> user turn -> (victory/failure/instruction)
+   * 
+   * Victory -> reset/start
+   * Failure -> reset/start
+   * Instruction Function:
+   * void newInstruction {
+   *  
+   * 
+   * */
 
+
+int state = 0; //state numbers: GameIdle = 0; Start = 10, Instruction = 11, User Turn = 12, Victory = 13, failure = 14
+int instr = 0; //instruction coding numbers : Launch = 1, Slide = 2, Twist = 3
 int score = 0;
 int units = 0;
 int tens = 0;
+int doThis = 0;
 int sleepTimer = 0;
+DFRobotDFPlayerMini myMP3Player;
+void setup() {
+  // I/O Config here:
 
-typedef enum
-{
-	GameIdle,
-    GameStart,
-    Instruction,
-    UserTurn,
-    Victory,
-    Failure
-} GameState;
-
-typedef enum
-{
-	Launch,
-	Slide,
-	Twist
-} UserAction;
-
-
-UserAction pickAction()
-{
-	int instr = rand() % 3;
-	if (instr == 0)
-	{
-		return Launch;
-	}
-	else if (instr == 1)
-	{
-		return Slide;
-	}
-	else
-	{
-		return Twist;
-	}
-}
-void declareAction(UserAction instruction)
-{
-	//play mp3 corresponding with specified instruction
-}
-void endGame(GameState endState)
-{
-	units = score % 10;
-	tens = (score - units) / 10;
-	//play mp3 corresponding with failure
-	if (tens != 0)
-	{
-		//play mp3 for tens digit (most likely some form of playfile(base address + 10 + tens variable)
-	}
-	//play mp3 for units digit ((most likely some form of playfile(base address + units variable)
 }
 
-bool success(UserAction action) //prototype for success checker
-{
-	bool nailedIt = false;
-	int i = 0;
-	while (i < 1000) //this number can and should be messed with to determine a good time interval. Can also be turned into a difficulty variable with multiple settings
-	{
-		switch (action)
-		{
-			case Launch:
-			{
-				if (/*input is successful*/1)
-				{
-					nailedIt = true;
-				}
-			}
-			break;
-			case Slide:
-			{
-				if (/*input is successful*/1)
-				{
-					nailedIt = true;
-				}
-			}
-			break;
-			case Twist:
-			{
-				if (/*input is successful*/1)
-				{
-					nailedIt = true;
-				}
-			}
-			break;
-			default:
-				break;
-		}
-		i++;
-	}
-	return nailedIt;
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  switch (state)
+    {
+      case 0: //GameIdle State
+      {
+        //play mp3 for "press button to start!"
+        myMP3Player.play(30);
+        while (/*not getting button input AND */sleepTimer < 10000) //this number can and should be messed with to determine a good time interval.
+        {
+          sleepTimer++;
+        }
+        if (sleepTimer == 10000)
+        {
+          //send power off signal
+        }
+        state = 10;
+      }
+      break;
+      case 10: //Game Start State
+      {
+        score = 0;
+        state = 11; 
+      }
+      break;
+      case 11: //Instruction State
+      {
+        doThis = pickAction();
+        declareAction(doThis);
+        state = 12;
+      }
+      break;
+      case 12: //User Turn State
+      {
+        if (success(doThis))
+        {
+          score ++;
+        }
+        else
+        {
+          state = 14;
+        }
+        if (score == 99)
+        {
+          state = 13;
+        }
+      }
+      break;
+      case 13: //Victory State
+      {
+        endGame();
+        state = 0;
+      }
+      break;
+      case 14: //Game Over State
+      {
+        endGame();
+        state = 0;
+      }
+      break;
+      default:
+        break;
+    }
 }
 
-int main(int argc, char **argv)
+
+int pickAction()
 {
-	
-	GameState nextState = GameIdle;
-	UserAction doThis;
-	while (1)
-	{
-		switch (nextState)
-		{
-			case GameIdle:
-			{
-				//play mp3 for "press button to start!"
-				while (/*not getting button input AND */sleepTimer < 10000) //this number can and should be messed with to determine a good time interval.
-				{
-					sleepTimer++;
-				}
-				if (sleepTimer == 10000)
-				{
-					//send power off signal
-				}
-				nextState = GameStart;
-			}
-			case GameStart:
-			{
-				score = 0;
-				nextState = Instruction;
-			}
-			break;
-			case Instruction:
-			{
-				doThis = pickAction();
-				declareAction(doThis);
-				nextState = UserTurn;
-			}
-			break;
-			case UserTurn:
-			{
-				if (success(doThis))
-				{
-					score ++;
-				}
-				else
-				{
-					nextState = Failure;
-				}
-				if (score == 99)
-				{
-					nextState = Victory;
-				}
-			}
-			break;
-			case Victory:
-			{
-				endGame(nextState);
-				nextState = GameIdle;
-			}
-			break;
-			case Failure:
-			{
-				endGame(nextState);
-				nextState = GameIdle;
-			}
-			break;
-			default:
-				break;
-		}
-	}
-	return 0;
+  return random(3) + 1;
+}
+void declareAction(int instruction)
+{
+  int whichFile = 0;
+
+  if (instruction == 1)
+  {
+    whichFile = 31;
+  }
+  else if (instruction == 2)
+  {
+    whichFile = 33;
+  }
+  else if (instruction == 3)
+  {
+    whichFile = 35;
+  }
+  myMP3Player.play(whichFile);
+}
+void endGame()
+{
+  units = score % 10;
+  tens = (score - units) / 10;
+  //play mp3 corresponding with failure
+  myMP3Player.play(28);
+  if (score == 99)
+  {
+    //play victory file
+    myMP3Player.play(36);
+  }
+  else if (score < 20)
+  {
+    //play mp3 for 0-19 (most likely some form of play(base address + score)
+    myMP3Player.play(score);
+  }
+  else
+  {
+    //play mp3 for tens digit
+    myMP3Player.play(tens + 18);
+    //play mp3 for units digit
+    myMP3Player.play(units);
+  }
+}
+
+bool success(int action) //prototype for success checker
+{
+  bool nailedIt = false;
+  int i = 0;
+  while (i < 1000) //this number can and should be messed with to determine a good time interval. Can also be turned into a difficulty variable with multiple settings
+  {
+    switch (action)
+    {
+      case 1:
+      {
+        if (/*launch input is successful*/1)
+        {
+          nailedIt = true;
+        }
+      }
+      break;
+      case 2:
+      {
+        if (/*slide is successful*/1)
+        {
+          nailedIt = true;
+        }
+      }
+      break;
+      case 3:
+      {
+        if (/*spin is successful*/1)
+        {
+          nailedIt = true;
+        }
+      }
+      break;
+      default:
+        break;
+    }
+    i++;
+  }
+  return nailedIt;
 }
